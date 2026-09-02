@@ -1,19 +1,22 @@
 version: "3.9"
 
 services:
-  # Servicio de API FastAPI
+  # FastAPI Backend Application
   mificha-api:
     build:
       context: .
       dockerfile: Dockerfile
     container_name: mificha-api
+    image: mificha-api:latest
     ports:
-      - "8000:8000"
+      - "${API_PORT:-8000}:8000"
     environment:
       - PYTHONUNBUFFERED=1
-      - DATABASE_URL=postgresql://mificha_user:mificha_password@mificha-db:5432/mificha_db
-      - ENVIRONMENT=development
-      - LOG_LEVEL=INFO
+      - ENVIRONMENT=${ENVIRONMENT:-development}
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+      - DATABASE_URL=postgresql://${DATABASE_USER}:${DATABASE_PASSWORD}@mificha-db:5432/${DATABASE_NAME}
+      - SECRET_KEY=${SECRET_KEY}
+      - JWT_ALGORITHM=${JWT_ALGORITHM:-HS256}
     depends_on:
       mificha-db:
         condition: service_healthy
@@ -23,25 +26,58 @@ services:
     networks:
       - mificha-network
     restart: unless-stopped
-    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
     healthcheck:
-      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/', timeout=5)"]
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/health', timeout=5)"]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 40s
+    profiles:
+      - dev
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 
-  # Servicio de Base de Datos PostgreSQL
+  # Production-like API service (without hot reload)
+  mificha-api-prod:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mificha-api-prod
+    image: mificha-api:latest
+    ports:
+      - "${API_PORT:-8000}:8000"
+    environment:
+      - PYTHONUNBUFFERED=1
+      - ENVIRONMENT=${ENVIRONMENT:-production}
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+      - DATABASE_URL=postgresql://${DATABASE_USER}:${DATABASE_PASSWORD}@mificha-db:5432/${DATABASE_NAME}
+      - SECRET_KEY=${SECRET_KEY}
+      - JWT_ALGORITHM=${JWT_ALGORITHM:-HS256}
+    depends_on:
+      mificha-db:
+        condition: service_healthy
+    networks:
+      - mificha-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/health', timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    profiles:
+      - prod
+
+  # PostgreSQL Database
   mificha-db:
     image: postgres:15-alpine
     container_name: mificha-db
     environment:
-      POSTGRES_USER: mificha_user
-      POSTGRES_PASSWORD: mificha_password
-      POSTGRES_DB: mificha_db
+      POSTGRES_USER: ${DATABASE_USER}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+      POSTGRES_DB: ${DATABASE_NAME}
       POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=es_ES.UTF-8"
     ports:
-      - "5432:5432"
+      - "${DATABASE_PORT:-5432}:5432"
     volumes:
       - mificha-db-data:/var/lib/postgresql/data
       - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/01-init.sql
@@ -49,22 +85,22 @@ services:
       - mificha-network
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U mificha_user -d mificha_db"]
+      test: ["CMD-SHELL", "pg_isready -U ${DATABASE_USER} -d ${DATABASE_NAME}"]
       interval: 10s
       timeout: 5s
       retries: 5
       start_period: 20s
 
-  # Servicio pgAdmin para gestión de BD (opcional, solo desarrollo)
+  # pgAdmin for Database Management (Development only)
   pgadmin:
     image: dpage/pgadmin4:latest
     container_name: mificha-pgadmin
     environment:
-      PGADMIN_DEFAULT_EMAIL: admin@mificha.local
-      PGADMIN_DEFAULT_PASSWORD: admin123
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@mificha.local}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-admin123}
       PGADMIN_CONFIG_SERVER_MODE: "False"
     ports:
-      - "5050:80"
+      - "${PGADMIN_PORT:-5050}:80"
     volumes:
       - pgadmin-data:/var/lib/pgadmin
     networks:

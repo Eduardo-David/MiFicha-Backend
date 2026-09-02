@@ -1,3 +1,4 @@
+# Python
 __pycache__/
 *.py[cod]
 *$py.class
@@ -25,21 +26,40 @@ htmlcov/
 .tox/
 .hypothesis/
 *.log
+
+# IDE & Editors
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
-.env
-.env.local
+*.sublime-project
+*.sublime-workspace
 .DS_Store
+
+# Git & Version Control
 .git
 .gitignore
+.github/
+
+# Docker
+docker-compose.yml
+docker-compose.*.yml
+.dockerignore
+Dockerfile
+
+# Project
 README.md
 LICENSE
-docker-compose.yml
-Dockerfile
-.dockerignore
 *.md
-.github/
+.env
+.env.local
+.env.*.local
 tests/
+pytest.ini
+Makefile
+
+# Documentation & Config
+docs/
+.plan*
+notes/
