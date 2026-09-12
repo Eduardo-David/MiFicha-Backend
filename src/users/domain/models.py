@@ -32,7 +32,6 @@ class Persona:
 
     Invariants:
     - identity_card: alphanumeric, min 5 chars, optional hyphen + alphanumeric extension
-    - email: RFC-compliant pattern (contains @ and valid domain with dot)
     - phone: Bolivian format - starts with 6 or 7, 8 digits, numbers only
     """
 
@@ -40,13 +39,11 @@ class Persona:
     first_name: str = ""
     last_name: str = ""
     identity_card: str = ""
-    email: str = ""
     phone: str = ""
 
     def __post_init__(self) -> None:
         """Validate all invariants on construction."""
         self._validate_identity_card()
-        self._validate_email()
         self._validate_phone()
 
     def _validate_identity_card(self) -> None:
@@ -57,15 +54,6 @@ class Persona:
                 "identity_card must be alphanumeric (min 5 chars), "
                 "optional hyphen followed by alphanumeric extension",
                 field="identity_card",
-            )
-
-    def _validate_email(self) -> None:
-        if not self.email:
-            raise ValidationError("email cannot be empty", field="email")
-        if not _EMAIL_REGEX.match(self.email):
-            raise ValidationError(
-                "email must contain @ and a valid domain with a dot",
-                field="email",
             )
 
     def _validate_phone(self) -> None:

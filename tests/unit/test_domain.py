@@ -24,14 +24,12 @@ class TestPersona:
             first_name="Juan",
             last_name="Perez",
             identity_card="6543210-2A",
-            email="user@mificha.com.bo",
             phone="71234567",
         )
 
         assert persona.first_name == "Juan"
         assert persona.last_name == "Perez"
         assert persona.identity_card == "6543210-2A"
-        assert persona.email == "user@mificha.com.bo"
         assert persona.phone == "71234567"
         assert isinstance(persona.id, uuid4().__class__)
 
@@ -41,7 +39,6 @@ class TestPersona:
             first_name="Maria",
             last_name="Gonzalez",
             identity_card="12345678",
-            email="maria@example.com",
             phone="61234567",
         )
         assert persona.identity_card == "12345678"
@@ -66,7 +63,6 @@ class TestPersona:
                 first_name="Test",
                 last_name="User",
                 identity_card="1234567",
-                email="test@example.com",
                 phone=invalid_phone,
             )
         assert exc_info.value.field == "phone"
@@ -91,34 +87,9 @@ class TestPersona:
                 first_name="Test",
                 last_name="User",
                 identity_card=invalid_ic,
-                email="test@example.com",
                 phone="71234567",
             )
         assert exc_info.value.field == "identity_card"
-
-    @pytest.mark.parametrize(
-        "invalid_email",
-        [
-            "invalid",
-            "no@domain",
-            "@nodomain.com",
-            "noatsign.com",
-            "spaces @domain.com",
-            "",
-        ],
-    )
-    def test_invalid_email_raises_validation_error(self, invalid_email: str):
-        """Email validation rejects malformed addresses."""
-        with pytest.raises(ValidationError) as exc_info:
-            Persona(
-                first_name="Test",
-                last_name="User",
-                identity_card="1234567",
-                email=invalid_email,
-                phone="71234567",
-            )
-        assert exc_info.value.field == "email"
-
 
 class TestUser:
     """Tests for User entity (24-hour cooldown logic)."""

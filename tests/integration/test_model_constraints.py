@@ -15,13 +15,14 @@ from alembic.config import Config
 from alembic import command
 import sqlalchemy as sa
 from src.infrastructure.db.models import Persona, User
+from src.core.config import Settings
 
 
 # ─── FIXTURES DE BASE DE DATOS ───
-# Basados en el scaffold proporcionado (DATABASE_URL hardcodeado para Docker)
+# Using Pydantic Settings for consistent DATABASE_URL configuration
 
-DATABASE_URL = "postgresql://mificha:secret@localhost:5432/mificha_db"
-engine = create_engine(DATABASE_URL)
+settings = Settings()
+engine = create_engine(settings.DATABASE_URL)
 
 
 @pytest.fixture(scope="module")
