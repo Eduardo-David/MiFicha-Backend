@@ -19,4 +19,4 @@ def test_administrar_cuenta_service_guardar():
     # Simulate error if device already exists
     dispositivo_repo.existeDispositivo.return_value = True
     with pytest.raises(Exception):
-service.registrarNuevaCuenta({}, '', '', '')
+        service.registrarNuevaCuenta({}, '', '', '')
