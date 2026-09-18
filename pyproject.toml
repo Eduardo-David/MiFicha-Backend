@@ -1,0 +1,13 @@
+# Poetry is not used anymore; dependencies are managed via requirements.txt and pip
+# This file is kept only for metadata and backwards compatibility
+name = "MiFicha"
+version = "0.1.0"
+description = "Backend for MiFicha Medical Appointment Scheduling"
+authors = ["Your Name <youremail@example.com>"]
+packages = [
+    { include = "src" }
+]
+
+[build-system]
+requires = []
+build-backend = ""
