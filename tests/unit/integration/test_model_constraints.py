@@ -18,9 +18,9 @@ from src.infrastructure.db.models import Persona, User
 
 
 # ─── FIXTURES DE BASE DE DATOS ───
-# Basados en el scaffold proporcionado (DATABASE_URL hardcodeado para Docker)
+from src.core.config import Settings
 
-DATABASE_URL = "postgresql://mificha:secret@localhost:5432/mificha_db"
+DATABASE_URL = Settings().DATABASE_URL
 engine = create_engine(DATABASE_URL)
 
 

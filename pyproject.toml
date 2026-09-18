@@ -11,3 +11,6 @@ packages = [
 [build-system]
 requires = []
 build-backend = ""
+
+[tool.pyright]
+extraPaths = ["."]
