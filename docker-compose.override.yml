@@ -1,0 +1,10 @@
+version: "3.9"
+
+# Archivo utilizado en desarrollo local para aplicar el perfil "dev" por defecto
+# y hacer override de otras configuraciones si es necesario.
+services:
+  mificha-api:
+    profiles: [] # Permite que se inicie sin necesidad de especificar --profile dev
+  
+  pgadmin:
+    profiles: [] # Permite que se inicie sin necesidad de especificar --profile dev
