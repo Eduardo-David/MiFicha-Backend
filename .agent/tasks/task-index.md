@@ -18,4 +18,4 @@ This file acts as the single source of truth for the work backlog of the AI Agen
 2. **Registration Dependency:** A-005 depends on the completed database, domain, and authentication foundations (A-001 through A-004), but does not issue a JWT; clients use the existing login flow after registration.
 3. **Atomic Registration:** Creating `Persona`, `User`, and `Device` must be one transaction. A failure in any step must not leave partial records.
 4. **Domain Purity Guardrail:** A-005 defines the `IOCRService` port and implements only a deterministic mock adapter for testing. Real third-party OCR integration is out of scope.
-5. **Branch Boundary:** A-006 and A-007 are not part of this branch. They will be implemented in `feature/UC0-editar-perfil` and `feature/UC0-eliminar-cuenta` respectively. A-008 is a pull-request quality policy, not a backlog task for this branch.
+5. **Branch Boundary:** Profile editing and account deletion are not part of this branch; they will be implemented in dedicated feature branches. Full-suite verification remains a pull-request quality policy, not a backlog task for this branch.
