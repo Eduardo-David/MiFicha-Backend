@@ -1,6 +1,6 @@
 # Task Index - MiFicha Backend Module: Administrar Usuario
 
-This file acts as the single source of truth for the work backlog of the AI Agent. Tasks must be executed in strict chronological order based on their priority and dependencies.
+This file acts as the single source of truth for the work backlog of the AI Agent on the current branch. Based on `PROPUESTA-ALCANCE-RAMA.md`, this branch is intentionally limited to Tasks A-001 through A-005. Later user-management flows will be tracked in dedicated branches.
 
 ## Task Matrix
 
@@ -10,13 +10,12 @@ This file acts as the single source of truth for the work backlog of the AI Agen
 | **A-002** | Define database schemas with SQLModel & Alembic | P0 | A-001 | Database models for `Cuenta`, `Persona`, and `Dispositivo` mapped with correct constraints. Alembic migrations generated and applied successfully in PostgreSQL database. | [x] completed |
 | **A-003** | Implement rich domain models & domain logic | P0 | A-002 | Business logic embedded directly within `/domain` entities (e.g., 24-hour lock calculation, hardware device untying). Pytest suite in `/tests/unit` passing 100% in isolation. | [x] completed |
 | **A-004** | Implement JWT authentication flow & password hashing | P1 | A-003 | Secure login endpoint `/auth/login` implemented using Bcrypt hashing. JWT token emission and validation. Verification of failing credentials returning secure controlled errors. | [x] Completed |
-| **A-005** | Implement account registration with OCR & device binding | P1 | A-004 | Endpoint `POST /api/v1/usuarios` fully operational. Integration with port `IOCRService` using a Pytest mock adapter. Ensures strict device binding rule (one active device per account). | [ ] Pending |
-| **A-006** | Implement profile updates with 24-hour lock | P1 | A-005 | Endpoint `PUT /api/v1/usuarios/perfil` protected by JWT. Checks last modification timestamp via domain entity logic. Throws custom safe exception with remaining time if <24h. | [ ] Pending |
-| **A-007** | Implement account deletion & asset release | P1 | A-006 | Endpoint `DELETE /api/v1/usuarios/cuenta` protected by JWT. Requires cryptographically secure password challenge. Unties `ANDROID_ID` logically and deletes record, releasing Carnet de Identidad in DB. | [ ] Pending |
-| **A-008** | Execute Stage-Gate quality check & full-suite verification | P2 | A-007 | Entire Pytest suite (unit, integration, and failure test cases) passing successfully. Zero "spec drift" detected. | [ ] Pending |
+| **A-005** | Create user account with OCR port and device binding | P1 | A-004 | `POST /api/v1/usuarios` creates `Persona`, `User` and `Device` atomically, hashes the password, rejects duplicate identity/email/Android ID values, and uses `IOCRService` through a deterministic test mock. | [ ] Pending |
 
 ## Dependency Graph & Rules
 
 1. **Foundations First:** Do not start on business logic (A-003, A-004) before database models (A-002) and project structures (A-001) are fully set up and verified.
-2. **Authentication Dependency:** Features requiring user identity (A-006, A-007) depend strictly on the completion of the JWT flow (A-004).
-3. **Domain Purity Guardrail:** The OCR integration in A-005 must only define the domain port `IOCRService` and implement a mock adapter for testing. The real physical integration with third-party APIs must not be programmed in this task.
+2. **Registration Dependency:** A-005 depends on the completed database, domain, and authentication foundations (A-001 through A-004), but does not issue a JWT; clients use the existing login flow after registration.
+3. **Atomic Registration:** Creating `Persona`, `User`, and `Device` must be one transaction. A failure in any step must not leave partial records.
+4. **Domain Purity Guardrail:** A-005 defines the `IOCRService` port and implements only a deterministic mock adapter for testing. Real third-party OCR integration is out of scope.
+5. **Branch Boundary:** A-006 and A-007 are not part of this branch. They will be implemented in `feature/UC0-editar-perfil` and `feature/UC0-eliminar-cuenta` respectively. A-008 is a pull-request quality policy, not a backlog task for this branch.
