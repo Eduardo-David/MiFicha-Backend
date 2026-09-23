@@ -10,7 +10,7 @@ import abc
 import uuid
 from typing import Optional
 
-from .models import Device, User
+from .models import Device, Persona, User
 
 
 class IPasswordHasher(abc.ABC):
@@ -38,6 +38,43 @@ class IPasswordHasher(abc.ABC):
 
         Returns:
             True if password matches hash, False otherwise.
+        """
+        raise NotImplementedError
+
+
+class IPersonaRepository(abc.ABC):
+    """Port for Persona persistence operations."""
+
+    @abc.abstractmethod
+    def save(self, persona: Persona) -> None:
+        """Persist a Persona entity.
+
+        Args:
+            persona: Persona entity to save.
+        """
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def find_by_id(self, persona_id: uuid.UUID) -> Optional[Persona]:
+        """Find a Persona by its ID.
+
+        Args:
+            persona_id: UUID of the persona to find.
+
+        Returns:
+            Persona entity if found, None otherwise.
+        """
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def find_by_identity_card(self, identity_card: str) -> Optional[Persona]:
+        """Find a Persona by identity card.
+
+        Args:
+            identity_card: Identity card to search for.
+
+        Returns:
+            Persona entity if found, None otherwise.
         """
         raise NotImplementedError
 

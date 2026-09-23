@@ -8,7 +8,8 @@ from __future__ import annotations
 import re
 import uuid
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
+from typing import Optional
 
 from .exceptions import RestriccionTiempoException, ValidationError
 
@@ -40,6 +41,7 @@ class Persona:
     first_name: str = ""
     last_name: str = ""
     identity_card: str = ""
+    birth_date: Optional[date] = None
     email: str = ""
     phone: str = ""
 

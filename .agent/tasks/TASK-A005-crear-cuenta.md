@@ -157,11 +157,24 @@ pytest tests/unit tests/integration tests/failure
 The task is complete when the focused and existing tests pass, the endpoint contract is documented by tests, and no real OCR integration or A-006/A-007 functionality has been added.
 
 ## 8. Completion Checklist
-
-- [ ] Registration use case and route implemented at `POST /api/v1/usuarios`.
-- [ ] `IOCRService` port and deterministic mock adapter added.
-- [ ] Persona, User, and Device are persisted atomically.
-- [ ] Password hashing and uniqueness conflicts are covered.
-- [ ] Focused unit, integration, and failure tests pass.
-- [ ] Existing authentication tests remain green.
-- [ ] Scope remains limited to A-005.
+Task Execution Checklist: A-005 (Crear Cuenta de Usuario)
+[x] 1. Domain Layer Updates
+[x] Update Persona model to accept optional birth_date.
+[x] Add IPersonaRepository to domain/ports.py.
+[x] 2. Application Layer Updates
+[x] Define IOCRService port in application/ports.py.
+[x] Add EntityAlreadyExistsException and OCRVerificationFailedException to exceptions.py.
+[x] Implement RegisterUserUseCase.
+[x] 3. Data/Infrastructure Layer Updates
+[x] Implement MockOCRService.
+[x] Implement SqlAlchemyPersonaRepository and SqlAlchemyDeviceRepository.
+[x] Implement atomic transaction handling in repositories/use case.
+[x] 4. Presentation Layer Updates
+[x] Define request/response Pydantic schemas in routes.py.
+[x] Implement POST /api/v1/usuarios endpoint.
+[x] Register the router in main.py.
+[x] 5. Testing and Verification
+[x] Write unit tests (tests/unit/test_register_use_case.py).
+[x] Write integration tests (tests/integration/test_register.py).
+[x] Write failure/edge-case tests (tests/failure/test_register_failures.py).
+[x] Verify all existing tests pass (pytest).

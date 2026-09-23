@@ -21,3 +21,18 @@ class InvalidTokenException(ApplicationException):
 
     def __init__(self, message: str = "Could not validate credentials"):
         super().__init__(message)
+
+
+class EntityAlreadyExistsException(ApplicationException):
+    """Raised when an entity with unique constraints already exists."""
+
+    def __init__(self, field: str, message: str):
+        super().__init__(message)
+        self.field = field
+
+
+class OCRVerificationFailedException(ApplicationException):
+    """Raised when OCR validation fails to verify identity."""
+
+    def __init__(self, message: str = "OCR verification failed"):
+        super().__init__(message)
