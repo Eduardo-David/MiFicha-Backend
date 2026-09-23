@@ -6,11 +6,11 @@ import pytest
 from fastapi.testclient import TestClient
 
 from src.main import app
-from src.users.domain.models import User
-from src.users.domain.ports import IUserRepository
-from src.users.infrastructure.api.routes import get_user_repository
-from src.users.infrastructure.auth.bcrypt_hasher import BcryptPasswordHasher
-from src.users.infrastructure.auth.jwt_service import PyJWTTokenService
+from src.features.users.domain.models import User
+from src.features.users.domain.ports import IUserRepository
+from src.features.users.presentation.routes import get_user_repository
+from src.features.users.data.auth.bcrypt_hasher import BcryptPasswordHasher
+from src.features.users.data.auth.jwt_service import PyJWTTokenService
 
 
 class InMemoryUserRepository(IUserRepository):

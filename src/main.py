@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from src.core.config import settings
-from src.users.infrastructure.api.routes import router as auth_router
+from src.features.users.presentation.routes import router as auth_router
 
 app = FastAPI(title=settings.PROJECT_NAME)
 

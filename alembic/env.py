@@ -10,7 +10,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 from src.core.config import Settings
 from sqlmodel import SQLModel
-from src.infrastructure.db import models
+from src.features.users.data import models
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

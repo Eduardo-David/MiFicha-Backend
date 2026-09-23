@@ -1,7 +1,7 @@
 import pytest
 from sqlmodel import Session, select
 from sqlalchemy.exc import IntegrityError
-from src.infrastructure.db.models import Persona, User, Device
+from src.features.users.data.models import Persona, User, Device
 from src.core.config import Settings
 from sqlalchemy import create_engine, text as sa_text
 from alembic.config import Config

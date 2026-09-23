@@ -8,11 +8,11 @@ from uuid import uuid4
 
 import pytest
 
-from src.users.domain.exceptions import (
+from src.features.users.domain.exceptions import (
     RestriccionTiempoException,
     ValidationError,
 )
-from src.users.domain.models import Device, Persona, User
+from src.features.users.domain.models import Device, Persona, User
 
 
 class TestPersona:

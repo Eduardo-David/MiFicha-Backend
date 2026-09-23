@@ -14,7 +14,7 @@ from sqlalchemy.exc import IntegrityError
 from alembic.config import Config
 from alembic import command
 import sqlalchemy as sa
-from src.infrastructure.db.models import Persona, User
+from src.features.users.data.models import Persona, User
 
 
 # ─── FIXTURES DE BASE DE DATOS ───
