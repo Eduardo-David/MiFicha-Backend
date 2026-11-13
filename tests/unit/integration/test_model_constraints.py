@@ -7,7 +7,7 @@ Estructura estricta AAA (Arrange-Act-Assert) para:
 3. Borrado en Cascada Persona → User (relación 1:1)
 """
 import pytest
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 from uuid import uuid4
 from sqlmodel import Session, select, create_engine
 from sqlalchemy.exc import IntegrityError
@@ -127,7 +127,7 @@ class TestUserEmailUniqueness:
             email="laura.perez@example.com",
             password_hash="hash_seguro_123",
             role="patient",
-            created_at=datetime.utcnow(),
+            created_at=datetime.now(timezone.utc),
             persona_id=persona.id,
         )
         session.add(usuario_original)
@@ -139,7 +139,7 @@ class TestUserEmailUniqueness:
             email="laura.perez@example.com",  # DUPLICADO intencional
             password_hash="otro_hash_456",
             role="doctor",
-            created_at=datetime.utcnow(),
+            created_at=datetime.now(timezone.utc),
             persona_id=persona.id,  # Mismo persona_id también duplicaría FK unique, pero probamos email
         )
 
@@ -181,7 +181,7 @@ class TestPersonaUserCascadeDelete:
             email="miguel.rodriguez@example.com",
             password_hash="hash_miguel_789",
             role="patient",
-            created_at=datetime.utcnow(),
+            created_at=datetime.now(timezone.utc),
             persona_id=persona.id,
         )
         session.add(usuario)

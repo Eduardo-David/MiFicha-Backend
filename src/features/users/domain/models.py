@@ -8,7 +8,7 @@ from __future__ import annotations
 import re
 import uuid
 from dataclasses import dataclass, field
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, timedelta, timezone
 from typing import Optional
 
 from .exceptions import RestriccionTiempoException, ValidationError
@@ -33,7 +33,7 @@ class Persona:
 
     Invariants:
     - identity_card: alphanumeric, min 5 chars, optional hyphen + alphanumeric extension
-    - email: RFC-compliant pattern (contains @ and valid domain with dot)
+    - email: RFC-compliant pattern (contains @ and valid domain with dot) if provided
     - phone: Bolivian format - starts with 6 or 7, 8 digits, numbers only
     """
 
@@ -42,7 +42,7 @@ class Persona:
     last_name: str = ""
     identity_card: str = ""
     birth_date: Optional[date] = None
-    email: str = ""
+    email: Optional[str] = None
     phone: str = ""
 
     def __post_init__(self) -> None:
@@ -62,6 +62,8 @@ class Persona:
             )
 
     def _validate_email(self) -> None:
+        if self.email is None:
+            return
         if not self.email:
             raise ValidationError("email cannot be empty", field="email")
         if not _EMAIL_REGEX.match(self.email):
@@ -94,7 +96,7 @@ class User:
     email: str = ""
     password_hash: str = ""
     role: str = ""
-    last_profile_update: datetime = field(default_factory=datetime.utcnow)
+    last_profile_update: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
 
     def __post_init__(self) -> None:
         """Validate role on construction."""
@@ -109,29 +111,42 @@ class User:
                 field="role",
             )
 
-    def update_profile(self, new_email: str, current_time: datetime) -> None:
-        """Update user's email with 24-hour cooldown enforcement.
+    def update_profile(
+        self,
+        new_email: Optional[str] = None,
+        current_time: Optional[datetime] = None,
+    ) -> None:
+        """Update user's profile with 24-hour cooldown enforcement.
 
         Args:
-            new_email: The new email address to set.
-            current_time: Current UTC time (timezone-naive).
+            new_email: The new email address to set (optional).
+            current_time: Current UTC time. If None, uses datetime.now(timezone.utc).
 
         Raises:
             ValidationError: If new_email is invalid.
             RestriccionTiempoException: If less than 24 hours have passed
                 since last_profile_update.
         """
-        # Validate new email format
-        if not new_email:
-            raise ValidationError("email cannot be empty", field="email")
-        if not _EMAIL_REGEX.match(new_email):
-            raise ValidationError(
-                "email must contain @ and a valid domain with a dot",
-                field="email",
-            )
+        now = current_time if current_time is not None else datetime.now(timezone.utc)
+
+        # Validate new email format if provided
+        if new_email is not None:
+            if not new_email:
+                raise ValidationError("email cannot be empty", field="email")
+            if not _EMAIL_REGEX.match(new_email):
+                raise ValidationError(
+                    "email must contain @ and a valid domain with a dot",
+                    field="email",
+                )
 
         # 24-hour cooldown validation
-        elapsed = current_time - self.last_profile_update
+        lpu = self.last_profile_update
+        if now.tzinfo is not None and lpu.tzinfo is None:
+            lpu = lpu.replace(tzinfo=timezone.utc)
+        elif now.tzinfo is None and lpu.tzinfo is not None:
+            lpu = lpu.replace(tzinfo=None)
+
+        elapsed = now - lpu
         cooldown = timedelta(hours=24)
 
         if elapsed < cooldown:
@@ -139,8 +154,9 @@ class User:
             raise RestriccionTiempoException(time_remaining=remaining)
 
         # Update allowed
-        self.email = new_email
-        self.last_profile_update = current_time
+        if new_email is not None:
+            self.email = new_email
+        self.last_profile_update = now
 
 
 @dataclass(slots=True)

@@ -1,5 +1,5 @@
 from typing import Optional, List
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 from uuid import UUID, uuid4
 from sqlmodel import SQLModel, Field, Relationship
 import sqlalchemy as sa
@@ -27,7 +27,8 @@ class User(SQLModel, table=True):
     email: str = Field(nullable=False, unique=True, index=True)
     password_hash: str = Field(nullable=False)
     role: str = Field(nullable=False)
-    created_at: datetime = Field(default_factory=datetime.utcnow, nullable=False)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc), nullable=False)
+    last_profile_update: datetime = Field(default_factory=lambda: datetime.now(timezone.utc), nullable=False)
     persona_id: UUID = Field(
         sa_column=sa.Column(sa.Uuid(), sa.ForeignKey("persona.id", ondelete="CASCADE"), nullable=False, unique=True)
     )
@@ -46,6 +47,6 @@ class Device(SQLModel, table=True):
     user_id: UUID = Field(
         sa_column=sa.Column(sa.Uuid(), sa.ForeignKey("user.id", ondelete="CASCADE"), nullable=False)
     )
-    linked_at: datetime = Field(default_factory=datetime.utcnow, nullable=False)
+    linked_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc), nullable=False)
 
     user: Optional["User"] = Relationship(back_populates="devices")

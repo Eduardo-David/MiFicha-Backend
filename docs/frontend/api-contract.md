@@ -18,9 +18,9 @@ Todas las rutas de este documento se expresan relativas a esa base URL.
 | --- | --- | --- | --- |
 | `GET` | `/health` | Disponible | Verificar que el backend responde. |
 | `POST` | `/auth/login` | Disponible | Autenticar una cuenta existente y recibir un JWT. |
-| `POST` | `/usuarios` | Pendiente: A-005 | Crear una cuenta, su identidad y su dispositivo. |
-
-Los endpoints para editar perfil y eliminar cuenta no forman parte de esta rama ni de este contrato.
+| `POST` | `/usuarios` | Disponible | Crear una cuenta, su identidad y su dispositivo. |
+| `PUT` | `/usuarios/perfil` | Disponible | Modificar datos de contacto (email, teléfono) con restricción de 24 horas. |
+| `DELETE` | `/usuarios/cuenta` | Disponible | Eliminar cuenta con challenge de contraseña y liberación de hardware/cédula. |
 
 ## 1. Health check
 
@@ -114,7 +114,7 @@ El frontend debe usar `loc` para identificar el campo inválido y mostrar su pro
 
 ## 3. Crear cuenta - A-005
 
-> **Estado:** Pendiente de implementación en el backend. Este contrato es el objetivo que debe cumplir la implementación de A-005.
+> **Estado:** Implementado y disponible.
 
 ### Request
 
@@ -169,31 +169,126 @@ Se devuelve cuando ya existe una cuenta con el correo, la cédula o el `android_
 
 ```json
 {
-  "detail": "The email is already registered"
+  "detail": "email is already registered"
 }
 ```
 
 El mensaje exacto puede identificar el campo en conflicto, pero nunca debe incluir SQL, stack traces, contraseñas ni información sensible.
 
-#### `422 Unprocessable Entity`
+#### `422 Unprocessable Content`
 
 Se devuelve cuando faltan campos o no cumplen las reglas de formato, por ejemplo, email inválido, contraseña corta, teléfono inválido, fecha ausente o `android_id` vacío.
 
-#### `500 Internal Server Error`
+## 4. Actualizar Perfil - A-006
 
-Representa un fallo inesperado del servidor. El frontend debe mostrar un mensaje genérico y no intentar interpretar detalles internos.
+> **Estado:** Implementado y disponible. Requiere token Bearer de autenticación.
 
-### Garantías de A-005
+Permite a un paciente modificar su correo electrónico y/o su número de teléfono. El sistema exige que hayan transcurrido al menos 24 horas desde la última modificación del perfil.
 
-Cuando A-005 esté implementado:
+### Request
 
-- Se crearán `Persona`, `User` y `Device` asociados al mismo registro.
-- El usuario se creará con rol `patient`.
-- La contraseña se almacenará únicamente como hash Bcrypt.
-- El registro será atómico: no quedarán registros parciales si falla uno de los pasos.
-- `email`, `identity_card` y `android_id` no podrán reutilizarse.
-- La validación OCR se consumirá mediante el puerto `IOCRService`.
-- El adaptador usado en pruebas será un mock; no habrá integración con un proveedor OCR real en A-005.
+```http
+PUT /api/v1/usuarios/perfil
+Authorization: Bearer <jwt>
+Content-Type: application/json
+```
+
+```json
+{
+  "email": "nuevo.correo@example.com",
+  "phone": "79876543"
+}
+```
+
+Todos los campos son opcionales en el body; se puede enviar solo `email`, solo `phone` o ambos.
+
+### Response `200 OK`
+
+```json
+{
+  "message": "Perfil actualizado exitosamente",
+  "id": "<user-uuid>",
+  "email": "nuevo.correo@example.com",
+  "phone": "79876543",
+  "last_profile_update": "2026-11-13T17:30:00+00:00"
+}
+```
+
+### Errors
+
+#### `401 Unauthorized`
+
+Token inválido, expirado o faltante.
+
+#### `403 Forbidden`
+
+Se deniega la modificación si no han transcurrido 24 horas desde la última actualización de perfil. Se informa el tiempo restante:
+
+```json
+{
+  "detail": "Profile modification is locked. Please wait 14h 23m remaining."
+}
+```
+
+#### `409 Conflict`
+
+El nuevo correo electrónico ya está registrado por otro usuario:
+
+```json
+{
+  "detail": "email is already registered"
+}
+```
+
+#### `422 Unprocessable Content`
+
+Formato de correo inválido o número de teléfono no cumple el formato boliviano (debe iniciar con 6 o 7 y tener 8 dígitos numéricos).
+
+---
+
+## 5. Eliminar Cuenta - A-007
+
+> **Estado:** Implementado y disponible. Requiere token Bearer de autenticación y contraseña actual como challenge.
+
+Permite al paciente dar de baja definitiva a su cuenta. Al confirmarse la contraseña, el sistema elimina la cuenta, desvincula el hardware (`android_id`) y libera el número de carnet (`identity_card`) de la base de datos para que puedan ser reutilizados en el futuro.
+
+### Request
+
+```http
+DELETE /api/v1/usuarios/cuenta
+Authorization: Bearer <jwt>
+Content-Type: application/json
+```
+
+```json
+{
+  "password": "CurrentPassword123"
+}
+```
+
+### Response `200 OK`
+
+```json
+{
+  "message": "Cuenta eliminada exitosamente. Se ha desvinculado el dispositivo y liberado la identidad."
+}
+```
+
+### Errors
+
+#### `401 Unauthorized`
+
+Token inválido o contraseña incorrecta:
+
+```json
+{
+  "detail": "Incorrect password"
+}
+```
+
+#### `422 Unprocessable Content`
+
+Body malformado o campo `password` vacío.
 
 ## Flujo recomendado para registro y login
 

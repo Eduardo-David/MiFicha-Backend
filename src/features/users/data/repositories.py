@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import uuid
-from typing import Optional
+from datetime import timezone
 
 from sqlmodel import Session, select
 
@@ -55,6 +55,10 @@ class SqlAlchemyUserRepository(IUserRepository):
         """Persist or update a user."""
         statement = select(DbUser).where(DbUser.id == user.id)
         db_user = self.session.exec(statement).first()
+        lpu = user.last_profile_update
+        if lpu.tzinfo is None:
+            lpu = lpu.replace(tzinfo=timezone.utc)
+
         if db_user is None:
             db_user = DbUser(
                 id=user.id,
@@ -62,12 +66,14 @@ class SqlAlchemyUserRepository(IUserRepository):
                 email=user.email,
                 password_hash=user.password_hash,
                 role=user.role,
+                last_profile_update=lpu,
             )
             self.session.add(db_user)
         else:
             db_user.email = user.email
             db_user.password_hash = user.password_hash
             db_user.role = user.role
+            db_user.last_profile_update = lpu
         self.session.flush()
 
     def find_by_id(self, user_id: uuid.UUID) -> Optional[DomainUser]:
@@ -82,6 +88,7 @@ class SqlAlchemyUserRepository(IUserRepository):
             email=db_user.email,
             password_hash=db_user.password_hash,
             role=db_user.role,
+            last_profile_update=db_user.last_profile_update,
         )
 
     def find_by_email(self, email: str) -> Optional[DomainUser]:
@@ -96,6 +103,7 @@ class SqlAlchemyUserRepository(IUserRepository):
             email=db_user.email,
             password_hash=db_user.password_hash,
             role=db_user.role,
+            last_profile_update=db_user.last_profile_update,
         )
 
     def delete(self, user_id: uuid.UUID) -> None:
@@ -144,7 +152,7 @@ class SqlAlchemyPersonaRepository(IPersonaRepository):
             first_name=db_persona.first_name,
             last_name=db_persona.last_name,
             identity_card=db_persona.identity_card,
-            email="", 
+            email=None, 
             phone=db_persona.phone or "",
         )
         domain.birth_date = db_persona.birth_date
@@ -160,11 +168,19 @@ class SqlAlchemyPersonaRepository(IPersonaRepository):
             first_name=db_persona.first_name,
             last_name=db_persona.last_name,
             identity_card=db_persona.identity_card,
-            email="",
+            email=None,
             phone=db_persona.phone or "",
         )
         domain.birth_date = db_persona.birth_date
         return domain
+
+    def delete(self, persona_id: uuid.UUID) -> None:
+        """Delete a persona by id."""
+        statement = select(DbPersona).where(DbPersona.id == persona_id)
+        db_persona = self.session.exec(statement).first()
+        if db_persona:
+            self.session.delete(db_persona)
+            self.session.flush()
 
 
 class SqlAlchemyDeviceRepository(IDeviceRepository):

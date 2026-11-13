@@ -7,7 +7,7 @@ from sqlalchemy import create_engine, text as sa_text
 from alembic.config import Config
 from alembic import command
 import uuid
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 
 
 @pytest.fixture(scope="module")
@@ -85,7 +85,7 @@ def test_insert_duplicate_email(session):
         email="alice@example.com",
         password_hash="hashed_pwd",
         role="patient",
-        created_at=datetime.utcnow(),
+        created_at=datetime.now(timezone.utc),
         persona_id=persona.id
     )
     session.add(user1)
@@ -95,7 +95,7 @@ def test_insert_duplicate_email(session):
         email="alice@example.com",  # duplicate
         password_hash="hashed_pwd2",
         role="patient",
-        created_at=datetime.utcnow(),
+        created_at=datetime.now(timezone.utc),
         persona_id=persona.id
     )
     session.add(user_duplicate)
@@ -118,7 +118,7 @@ def test_device_cascade_delete(session):
         email="bob@example.com",
         password_hash="hashed_pw",
         role="doctor",
-        created_at=datetime.utcnow(),
+        created_at=datetime.now(timezone.utc),
         persona_id=persona.id
     )
     session.add(user)
@@ -127,7 +127,7 @@ def test_device_cascade_delete(session):
     device = Device(
         android_id="device_xyz_999",
         user_id=user.id,
-        linked_at=datetime.utcnow()
+        linked_at=datetime.now(timezone.utc)
     )
     session.add(device)
     session.commit()

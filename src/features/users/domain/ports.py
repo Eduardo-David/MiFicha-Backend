@@ -78,6 +78,15 @@ class IPersonaRepository(abc.ABC):
         """
         raise NotImplementedError
 
+    @abc.abstractmethod
+    def delete(self, persona_id: uuid.UUID) -> None:
+        """Delete a Persona by its ID.
+
+        Args:
+            persona_id: UUID of the persona to delete.
+        """
+        raise NotImplementedError
+
 
 class IUserRepository(abc.ABC):
     """Port for User persistence operations."""

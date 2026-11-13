@@ -33,6 +33,9 @@ class InMemoryPersonaRepository(IPersonaRepository):
             if p.identity_card == identity_card:
                 return p
         return None
+    def delete(self, persona_id: uuid.UUID) -> None:
+        if persona_id in self.personas:
+            del self.personas[persona_id]
 
 
 class InMemoryUserRepository(IUserRepository):
