@@ -17,7 +17,6 @@ from src.features.users.application.exceptions import (
     EntityAlreadyExistsException,
     OCRVerificationFailedException,
 )
-from src.features.users.domain.exceptions import ValidationError
 from src.features.users.domain.exceptions import RestriccionTiempoException, ValidationError
 from src.features.users.application.login_use_case import LoginUseCase
 from src.features.users.application.register_user_use_case import RegisterUserUseCase
@@ -243,7 +242,6 @@ def register_user(
         )
     except (OCRVerificationFailedException, ValidationError) as e:
         raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
             detail=str(e)
         )
